@@ -1,0 +1,21 @@
+# Arquivos e pastas do Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Ambientes virtuais
+venv/
+venv.bak/
+env/
+env.bak/
+
+# Arquivos de dependências (gerados por pip)
+*.egg-info/
+
+# Arquivos gerados pelo simulador
+*.csv
+
+# Arquivos de IDEs e editores
+.vscode/
+.idea/
