@@ -1,0 +1,36 @@
+--- RELATÓRIO FINAL DA MISSÃO ---
+
+Data e Hora de Emissão: 23/11/2025 12:39:32
+Status da Missão: Concluída
+
+--- Resumo da Operação ---
+Distância Total Percorrida: 200.0m
+Nível Final da Bateria: 80.0%
+Kits de Socorro Utilizados pelo Robô: 0
+Total de Kits Necessários na Missão: 3
+
+--- VÍTIMAS DETECTADAS (4) - ORDENADAS POR PRIORIDADE ---
+
+  - Vítima ID: V3720
+    Posição: 180m
+    Gravidade: Crítico
+    Registro de Campo: Não
+    Kit de Socorro Aplicado: Não
+
+  - Vítima ID: V4431
+    Posição: 120m
+    Gravidade: Grave
+    Registro de Campo: Não
+    Kit de Socorro Aplicado: Não
+
+  - Vítima ID: V7958
+    Posição: 80m
+    Gravidade: Moderado
+    Registro de Campo: Não
+    Kit de Socorro Aplicado: Não
+
+  - Vítima ID: V2610
+    Posição: 30m
+    Gravidade: Leve
+    Registro de Campo: Não
+    Kit de Socorro Aplicado: Não

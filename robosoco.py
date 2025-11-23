@@ -1,5 +1,5 @@
 import tkinter as tk
-from tkinter import ttk, scrolledtext
+from tkinter import ttk, scrolledtext, messagebox
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.figure import Figure
@@ -12,45 +12,56 @@ import io
 import os
 
 # --- CONFIGURAÇÕES DE IMAGENS ---
-PASTA_IMAGENS = "imagens"
+# A forma mais robusta de definir o caminho para a pasta de imagens.
+# Isso garante que o script encontre a pasta 'imagens' que está no mesmo diretório que ele.
+DIRETORIO_DO_SCRIPT = os.path.dirname(os.path.abspath(__file__))
+PASTA_IMAGENS = os.path.join(DIRETORIO_DO_SCRIPT, "imagens")
+
 
 # Mapeamento dos arquivos
 MAP_CENARIOS = {
     # Cenário Leve/Estável/Verde
-    'leve': 'verdeconscienteestável.jpg',
-    'baixa': 'verdeconscienteestável.jpg',
-    'consciente': 'verdeconscienteestável.jpg',
-    'estável': 'verdeconscienteestável.jpg',
-    'estavel': 'verdeconscienteestável.jpg',
+    'leve': 'verdeconscienteestavel.png',
+    'baixa': 'verdeconscienteestavel.png',
+    'consciente': 'verdeconscienteestavel.png',
+    'estável': 'verdeconscienteestavel.png',
+    'estavel': 'verdeconscienteestavel.png',
 
     # Cenário Médio/Confuso/Vermelho
-    'moderado': 'vermelhoconfusionstável.jpg',
-    'média': 'vermelhoconfusionstável.jpg',
-    'media': 'vermelhoconfusionstável.jpg',
-    'instável': 'vermelhoconfusionstável.jpg',
-    'instavel': 'vermelhoconfusionstável.jpg',
-    'semi-consciente': 'vermelhoconfusionstável.jpg',
-    'semiconsciente': 'vermelhoconfusionstável.jpg',
+    'moderado': 'vermelhoconfusoinstavel.png',
+    'média': 'vermelhoconfusoinstavel.png',
+    'media': 'vermelhoconfusoinstavel.png',
+    'instável': 'vermelhoconfusoinstavel.png',
+    'instavel': 'vermelhoconfusoinstavel.png',
+    'semi-consciente': 'vermelhoconfusoinstavel.png',
+    'semiconsciente': 'vermelhoconfusoinstavel.png',
 
     # Cenário Grave/Crítico
-    'grave': 'graveinconscientecritico.jpg',
-    'crítico': 'graveinconscientecritico.jpg',
-    'critico': 'graveinconscientecritico.jpg',
-    'inconsciente': 'graveinconscientecritico.jpg',
+    'grave': 'graveinconscientecritico.png',
+    'crítico': 'graveinconscientecritico.png', # A chave pode ter acento
+    'critico': 'graveinconscientecritico.png',
+    'inconsciente': 'graveinconscientecritico.png',
     
     # Padrão
-    '_default_': 'vermelhoconfusionstável.jpg'
+    '_default_': 'vermelhoconfusoinstavel.png'
 }
 
 # --- VERIFICAÇÃO DA PASTA DE IMAGENS ---
 def verificar_pasta_imagens():
     """Verifica se a pasta de imagens existe"""
     if not os.path.exists(PASTA_IMAGENS):
-        print(f"⚠️ Aviso: Pasta '{PASTA_IMAGENS}' não encontrada!")
+        print(f"❌ ERRO CRÍTICO: A pasta de imagens não foi encontrada no caminho:")
+        print(f"   '{os.path.abspath(PASTA_IMAGENS)}'")
         return False
+    
+    print(f"✅ Pasta de imagens encontrada em: {os.path.abspath(PASTA_IMAGENS)}")
     
     arquivos_necessarios = set(MAP_CENARIOS.values())
     arquivos_existentes = set(os.listdir(PASTA_IMAGENS))
+    
+    print("\n--- VERIFICAÇÃO DE ARQUIVOS ---")
+    print(f"Arquivos que o código ESPERA: {sorted(list(arquivos_necessarios))}")
+    print(f"Arquivos que o código ENCONTROU na pasta: {sorted(list(arquivos_existentes))}")
     
     arquivos_faltantes = arquivos_necessarios - arquivos_existentes
     if arquivos_faltantes:
@@ -58,6 +69,7 @@ def verificar_pasta_imagens():
         return False
     
     print("✅ Pasta de imagens verificada!")
+    print("---------------------------------\n")
     return True
 
 # --- CLASSES PRINCIPAIS ---
@@ -72,43 +84,62 @@ class Vitima:
         self.foto_tirada = False
         self.kit_aplicado = False
         self.id = f"V{random.randint(1000, 9999)}"
-        self.foto_data = self._carregar_foto_arquivo()
+        self.foto_data = self._gerar_imagem_vitima()
 
-    def _carregar_foto_arquivo(self):
-        """Carrega imagem da pasta ou gera uma simulada"""
+    def _get_nome_arquivo_imagem(self):
+        """Centraliza a lógica para encontrar o nome do arquivo de imagem com base no estado da vítima."""
         nome_arquivo = MAP_CENARIOS.get('_default_')
         chave_grav = self.gravidade.lower()
         chave_est = self.estado.lower().replace('-', '').replace(' ', '')
-
         if chave_grav in MAP_CENARIOS:
             nome_arquivo = MAP_CENARIOS[chave_grav]
         elif chave_est in MAP_CENARIOS:
             nome_arquivo = MAP_CENARIOS[chave_est]
+        return nome_arquivo
 
-        caminho_completo = os.path.join(PASTA_IMAGENS, nome_arquivo)
-        
-        if os.path.exists(caminho_completo):
-            try:
-                with open(caminho_completo, 'rb') as f:
-                    return f.read()
-            except Exception as e:
-                print(f"Erro ao ler arquivo: {e}")
-        
-        return self._gerar_foto_simulada()
-
-    def _gerar_foto_simulada(self):
-        """Gera imagem simulada"""
+    def _gerar_imagem_vitima(self):
+        """Gera a imagem da vítima, com a foto de arquivo dentro de um círculo colorido."""
         fig = Figure(figsize=(3, 3), dpi=80, facecolor='#1e3a5f')
         ax = fig.add_subplot(111)
         ax.set_facecolor('#1e3a5f')
         
         cores = {"Leve": "#4CAF50", "Moderado": "#FF9800", "Grave": "#F44336", "Crítico": "#8B0000"}
         cor = cores.get(self.gravidade, "white")
+        # Cria um círculo sem preenchimento (fill=False) e com uma borda mais espessa (linewidth)
+        # Isso servirá como a borda colorida ao redor da imagem.
+        circle = plt.Circle((0.5, 0.5), 0.4, color=cor, fill=False, linewidth=4)
+        ax.add_patch(circle) # Adiciona a borda
+
+        # --- LÓGICA PARA CARREGAR A IMAGEM DA VÍTIMA ---
+        imagem_adicionada = False
         
-        circle = plt.Circle((0.5, 0.5), 0.4, color=cor, alpha=0.8)
-        ax.add_patch(circle)
-        ax.text(0.5, 0.5, "VÍTIMA", ha='center', va='center', fontsize=14, color='white', weight='bold')
-        ax.text(0.5, 0.2, self.gravidade.upper(), ha='center', va='center', fontsize=10, color='white')
+        # 1. Encontra o nome do arquivo de imagem correto usando o método centralizado
+        nome_arquivo = self._get_nome_arquivo_imagem()
+
+        # 2. Monta o caminho completo para a imagem
+        caminho_imagem = os.path.join(PASTA_IMAGENS, nome_arquivo)
+
+        # 3. Tenta carregar e exibir a imagem dentro do círculo
+        if os.path.exists(caminho_imagem):
+            try:
+                img = plt.imread(caminho_imagem)
+                im = ax.imshow(img, extent=(0.1, 0.9, 0.1, 0.9)) # Posiciona a imagem para caber no círculo
+                
+                # Cria um segundo círculo (invisível) apenas para usar como máscara de recorte
+                clip_circle = plt.Circle((0.5, 0.5), 0.4, transform=ax.transData)
+                im.set_clip_path(clip_circle) # Recorta a imagem no formato do círculo
+                imagem_adicionada = True
+            except Exception as e:
+                print(f"⚠️ Erro ao carregar a imagem '{caminho_imagem}': {e}")
+        # else:
+            # Se o arquivo não for encontrado, o texto padrão será exibido abaixo.
+            # Não é necessário um print aqui, pois a verificação inicial já avisa.
+
+        # Se não foi possível adicionar a imagem, exibe o texto padrão
+        if not imagem_adicionada:
+            ax.text(0.5, 0.5, "VÍTIMA", ha='center', va='center', fontsize=14, color='white', weight='bold')
+            ax.text(0.5, 0.2, self.gravidade.upper(), ha='center', va='center', fontsize=10, color='white')
+
         ax.set_xlim(0, 1)
         ax.set_ylim(0, 1)
         ax.axis('off')
@@ -200,6 +231,61 @@ class CentralDeControle:
         if self.gui:
             self.gui.mostrar_detalhes_vitima(vitima)
 
+    def selecionar_proxima_vitima(self):
+        """Seleciona a próxima vítima na lista de detectadas."""
+        if not self.vitimas_detectadas or len(self.vitimas_detectadas) < 2:
+            return
+
+        try:
+            idx_atual = self.vitimas_detectadas.index(self.vitima_selecionada)
+            proximo_idx = (idx_atual + 1) % len(self.vitimas_detectadas)
+        except (ValueError, AttributeError):
+            # Caso nenhuma esteja selecionada ou a selecionada não esteja na lista
+            proximo_idx = 0
+        
+        self.selecionar_vitima(self.vitimas_detectadas[proximo_idx])
+
+    def gerar_relatorio_final(self):
+        """Gera um relatório textual com o resumo da missão."""
+        if not self.missao_concluida:
+            return "A missão ainda não foi concluída."
+
+        # Calcula o total de kits necessários com base no estado inicial de todas as vítimas no cenário
+        kits_necessarios_total = sum(1 for v in self.cenario.objetos if v.gravidade in ["Crítico", "Grave", "Moderado"])
+
+        status_final = "Concluída" if self.robo.posicao_atual >= self.cenario.comprimento else "Interrompida"
+        
+        relatorio = f"--- RELATÓRIO FINAL DA MISSÃO ---\n\n"
+        relatorio += f"Data e Hora de Emissão: {datetime.datetime.now().strftime('%d/%m/%Y %H:%M:%S')}\n"
+        relatorio += f"Status da Missão: {status_final}\n\n"
+        
+        relatorio += "--- Resumo da Operação ---\n"
+        relatorio += f"Distância Total Percorrida: {self.robo.posicao_atual:.1f}m\n"
+        relatorio += f"Nível Final da Bateria: {self.robo.bateria:.1f}%\n"
+        relatorio += f"Kits de Socorro Utilizados pelo Robô: {3 - self.robo.kits_primeiros_socorros}\n"
+        relatorio += f"Total de Kits Necessários na Missão: {kits_necessarios_total}\n\n"
+        
+        relatorio += f"--- VÍTIMAS DETECTADAS ({len(self.vitimas_detectadas)}) - ORDENADAS POR PRIORIDADE ---\n"
+        if not self.vitimas_detectadas:
+            relatorio += "Nenhuma vítima foi detectada durante a missão.\n"
+        else:
+            # Define a ordem de prioridade para ordenação
+            ordem_prioridade = {"Crítico": 0, "Grave": 1, "Moderado": 2, "Leve": 3}
+            
+            # Ordena a lista de vítimas detectadas com base na prioridade
+            vitimas_ordenadas = sorted(
+                self.vitimas_detectadas, 
+                key=lambda v: ordem_prioridade.get(v.gravidade, 4)
+            )
+
+            for vitima in vitimas_ordenadas:
+                relatorio += f"\n  - Vítima ID: {vitima.id}\n"
+                relatorio += f"    Posição: {vitima.x}m\n"
+                relatorio += f"    Gravidade: {vitima.gravidade}\n"
+                relatorio += f"    Registro de Campo: {'Sim' if vitima.foto_tirada else 'Não'}\n"
+                relatorio += f"    Kit de Socorro Aplicado: {'Sim' if vitima.kit_aplicado else 'Não'}\n"
+        return relatorio
+
     def iniciar_missao(self, robo, cenario):
         print("🚀 INICIANDO MISSÃO...")
         self.robo = robo
@@ -243,6 +329,7 @@ class CentralDeControle:
             status_final = "Concluída" if self.robo.posicao_atual >= self.cenario.comprimento else "Interrompida"
             self.gui.adicionar_mensagem_console("Missão", f"Missão {status_final}! Posição final: {self.robo.posicao_atual:.1f}m", "SUCESSO")
             self.gui.status_var.set(f"Missão {status_final}")
+            self.gui.habilitar_botao_relatorio()
 
     def _verificar_deteccao_vitimas(self):
         for vitima in self.cenario.objetos:
@@ -288,7 +375,7 @@ class CentralControleGUI:
         self.central = central_controle
         self.root = tk.Tk()
         self.root.title("Central de Controle RoboSoco 5001")
-        self.root.geometry("1600x1000")
+        self.root.geometry("1800x1000")
         self.root.configure(bg='#0a1929')
         
         self.ultima_atualizacao = tk.StringVar(value="Nunca")
@@ -341,6 +428,10 @@ class CentralControleGUI:
         status_frame.pack(side=tk.RIGHT)
         ttk.Label(status_frame, text="Status:", font=('Arial', 9)).pack(side=tk.LEFT)
         ttk.Label(status_frame, textvariable=self.status_geral, font=('Arial', 9, 'bold'), foreground='green').pack(side=tk.LEFT, padx=(5, 15))
+        
+        self.botao_relatorio = ttk.Button(status_frame, text="Gerar Relatório Final", command=self.abrir_janela_relatorio, state=tk.DISABLED)
+        self.botao_relatorio.pack(side=tk.LEFT, padx=(0, 15))
+        
         ttk.Label(status_frame, text="Última atualização:", font=('Arial', 9)).pack(side=tk.LEFT)
         ttk.Label(status_frame, textvariable=self.ultima_atualizacao, font=('Arial', 9, 'bold')).pack(side=tk.LEFT, padx=(5, 0))
         
@@ -385,10 +476,10 @@ class CentralControleGUI:
         
         # Status do Robô
         info_frame = ttk.LabelFrame(status_frame, text="STATUS DO ROBÔ", padding=5)
-        info_frame.pack(fill=tk.X, pady=5)
+        info_frame.pack(fill=tk.X, pady=5, expand=False)
         
         info_grid = ttk.Frame(info_frame)
-        info_grid.pack(fill=tk.X)
+        info_grid.pack(fill=tk.X, padx=5, pady=5)
         
         status_info = [
             ("Posição:", self.pos_var),
@@ -407,22 +498,20 @@ class CentralControleGUI:
         self.bateria_bar.grid(row=1, column=2, sticky='w', padx=(10, 0))
         self.bateria_bar['value'] = 100
             
-        ttk.Separator(status_frame, orient='horizontal').pack(fill=tk.X, pady=10)
-        
         # Alertas
         alertas_frame = ttk.LabelFrame(status_frame, text="ALERTAS ATIVOS", padding=5)
         alertas_frame.pack(fill=tk.BOTH, expand=True, pady=5)
         
         self.alertas_text = scrolledtext.ScrolledText(alertas_frame, height=8, bg='#0c1a2a', fg='white', font=('Consolas', 9))
-        self.alertas_text.pack(fill=tk.BOTH, expand=True)
+        self.alertas_text.pack(fill=tk.BOTH, expand=True, pady=(5,0))
         self.alertas_text.insert(tk.END, "Aguardando início da missão...\n")
         self.alertas_text.config(state=tk.DISABLED)
         
-        ttk.Separator(status_frame, orient='horizontal').pack(fill=tk.X, pady=10)
+        ttk.Separator(status_frame, orient='horizontal').pack(fill=tk.X, pady=(5, 10))
         
         # Estatísticas
         stats_frame = ttk.LabelFrame(status_frame, text="ESTATÍSTICAS", padding=5)
-        stats_frame.pack(fill=tk.X, pady=5)
+        stats_frame.pack(fill=tk.X, pady=5, expand=False)
         
         stats_grid = ttk.Frame(stats_frame)
         stats_grid.pack(fill=tk.X)
@@ -446,9 +535,10 @@ class CentralControleGUI:
         self.vitima_vazia_frame.pack(fill=tk.BOTH, expand=True)
         
         ttk.Label(self.vitima_vazia_frame, text="🔍", font=('Arial', 48), foreground='#666666').pack(expand=True, pady=20)
-        ttk.Label(self.vitima_vazia_frame, text="Nenhuma Vítima Detectada", font=('Arial', 12, 'bold'), foreground='#666666').pack()
+        ttk.Label(self.vitima_vazia_frame, text="Nenhuma Vítima Selecionada", font=('Arial', 12, 'bold'), foreground='#666666').pack()
         
         self.vitima_detalhes_frame = ttk.Frame(vitima_frame)
+        vitima_frame.rowconfigure(0, weight=1)
         
         self.vitima_foto_label = ttk.Label(self.vitima_detalhes_frame)
         self.vitima_foto_label.pack(pady=10)
@@ -457,7 +547,7 @@ class CentralControleGUI:
         self.vitima_id_label.pack()
         
         info_grid = ttk.Frame(self.vitima_detalhes_frame)
-        info_grid.pack(fill=tk.X, pady=15, padx=10)
+        info_grid.pack(fill=tk.X, pady=15, padx=20)
         
         ttk.Label(info_grid, text="Gravidade:", font=('Arial', 10, 'bold')).grid(row=0, column=0, sticky='w', pady=3)
         self.vitima_gravidade_label = ttk.Label(info_grid, font=('Arial', 10))
@@ -471,9 +561,9 @@ class CentralControleGUI:
         self.vitima_posicao_label = ttk.Label(info_grid, font=('Arial', 10))
         self.vitima_posicao_label.grid(row=2, column=1, sticky='w', pady=3, padx=(10, 0))
         
-        ttk.Label(info_grid, text="Foto:", font=('Arial', 10, 'bold')).grid(row=3, column=0, sticky='w', pady=3)
+        ttk.Label(info_grid, text="Registro de Campo:", font=('Arial', 10, 'bold')).grid(row=3, column=0, sticky='w', pady=3)
         self.vitima_foto_status = ttk.Label(info_grid, font=('Arial', 9))
-        self.vitima_foto_status.grid(row=3, column=1, sticky='w', pady=3, padx=(10, 0))
+        self.vitima_foto_status.grid(row=3, column=1, sticky='w', pady=3, padx=(5, 0))
         
         ttk.Label(info_grid, text="Kit:", font=('Arial', 10, 'bold')).grid(row=4, column=0, sticky='w', pady=3)
         self.vitima_kit_status = ttk.Label(info_grid, font=('Arial', 9))
@@ -503,7 +593,7 @@ class CentralControleGUI:
         if vitima.foto_tirada:
             self.vitima_foto_status.configure(text="✅ Registrada", foreground="#4CAF50")
         else:
-            self.vitima_foto_status.configure(text="❌ Pendente", foreground="#F44336")
+            self.vitima_foto_status.configure(text="⚠️ Aguardando Robô", foreground="#FF9800")
         
         if vitima.kit_aplicado:
             self.vitima_kit_status.configure(text="✅ Aplicado", foreground="#4CAF50")
@@ -542,6 +632,48 @@ class CentralControleGUI:
         self.alertas_text.see(tk.END)
         self.alertas_text.config(state=tk.DISABLED)
         self.alertas_text.tag_configure(tipo, foreground=cor)
+
+    def habilitar_botao_relatorio(self):
+        """Habilita o botão de gerar relatório."""
+        self.botao_relatorio.config(state=tk.NORMAL)
+
+    def abrir_janela_relatorio(self):
+        """Cria e exibe a janela com o relatório final da missão."""
+        relatorio_texto = self.central.gerar_relatorio_final()
+        
+        report_window = tk.Toplevel(self.root)
+        report_window.title("Relatório Final da Missão")
+        report_window.geometry("600x700")
+        report_window.configure(bg='#0a1929')
+        
+        # Frame para os botões na parte inferior
+        button_frame = ttk.Frame(report_window)
+        button_frame.pack(side=tk.BOTTOM, fill=tk.X, padx=10, pady=(5, 10))
+
+        # Botão para salvar o relatório
+        save_button = ttk.Button(button_frame, text="Salvar Relatório em .txt", command=lambda: self.salvar_relatorio(relatorio_texto))
+        save_button.pack(side=tk.RIGHT)
+
+        # Área de texto para exibir o relatório
+        text_area = scrolledtext.ScrolledText(report_window, wrap=tk.WORD, bg='#0c1a2a', fg='white', font=('Consolas', 10))
+        text_area.pack(expand=True, fill=tk.BOTH, padx=10, pady=(10, 0))
+        text_area.insert(tk.INSERT, relatorio_texto)
+        text_area.config(state=tk.DISABLED)
+
+    def salvar_relatorio(self, relatorio_texto):
+        """Salva o conteúdo do relatório em um arquivo de texto."""
+        try:
+            # Cria um nome de arquivo único com data e hora
+            timestamp = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+            nome_arquivo = f"relatorio_missao_{timestamp}.txt"
+            caminho_arquivo = os.path.join(DIRETORIO_DO_SCRIPT, nome_arquivo)
+
+            with open(caminho_arquivo, "w", encoding="utf-8") as f:
+                f.write(relatorio_texto)
+            
+            messagebox.showinfo("Sucesso", f"Relatório salvo com sucesso em:\n{caminho_arquivo}")
+        except Exception as e:
+            messagebox.showerror("Erro ao Salvar", f"Não foi possível salvar o relatório.\nErro: {e}")
 
     def atualizar_interface_simulacao(self, dados):
         self.atualizar_status_robo(dados)
@@ -596,6 +728,7 @@ class CentralControleGUI:
         style.configure('TLabel', background='#0a1929', foreground='white')
         style.configure('TLabelframe', background='#132f4c', foreground='white')
         style.configure('TLabelframe.Label', background='#132f4c', foreground='white')
+        style.configure('TButton', background='#007fff', foreground='white', font=('Arial', 9, 'bold'))
         
         verificar_pasta_imagens()
         self.root.mainloop()
