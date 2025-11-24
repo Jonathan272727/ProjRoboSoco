@@ -65,6 +65,7 @@ def verificar_pasta_imagens():
     arquivos_faltantes = arquivos_necessarios - arquivos_existentes
     if arquivos_faltantes:
         print(f"⚠️ Arquivos faltantes: {arquivos_faltantes}")
+        messagebox.showerror("Erro Crítico", f"Arquivos de imagem essenciais estão faltando na pasta 'imagens':\n\n{', '.join(arquivos_faltantes)}")
         return False
     
     print("✅ Pasta de imagens verificada!")
@@ -724,7 +725,9 @@ class CentralControleGUI:
         style.configure('TLabelframe.Label', background='#132f4c', foreground='white')
         style.configure('TButton', background='#007fff', foreground='white', font=('Arial', 9, 'bold'))
         
-        verificar_pasta_imagens()
+        if not verificar_pasta_imagens():
+            self.root.destroy() # Fecha a aplicação se a verificação falhar
+            return
         self.root.mainloop()
 
 # --- EXECUÇÃO PRINCIPAL ---

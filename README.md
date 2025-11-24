@@ -1,62 +1,39 @@
-# RoboSoco 5001 - Simulador de Resgate em Túnel
+# 🤖 Central de Controle RoboSoco 5001
 
-Este projeto é um simulador de um robô de resgate (`RoboSoco 5001`) que explora um túnel, detecta vítimas, avalia sua condição e presta os primeiros socorros. A aplicação possui uma interface gráfica completa para monitoramento da missão em tempo real.
+Simulador de uma central de controle para um robô de resgate em túneis, chamado "RoboSoco 5001". A interface gráfica, construída com Tkinter, permite monitorar o robô em tempo real, visualizar vítimas detectadas, e gerar relatórios de missão.
 
-## Pré-requisitos
+## ✨ Funcionalidades
 
-- Python 3.8+ instalado e adicionado ao PATH do sistema.
+- **Dashboard em Tempo Real**: Monitore a posição, bateria, temperatura e status do robô.
+- **Mapeamento do Túnel**: Visualize a trajetória do robô e a localização das vítimas em um mapa 2D.
+- **Detecção de Vítimas**: O robô detecta vítimas, tira fotos e aplica kits de primeiros socorros automaticamente.
+- **Painel de Detalhes da Vítima**: Veja informações detalhadas de cada vítima selecionada, incluindo gravidade, estado e uma imagem representativa.
+- **Logs e Alertas**: Acompanhe os eventos da missão através de um console de logs e um painel de alertas.
+- **Geração de Relatório**: Ao final da missão, gere e salve um relatório detalhado em formato `.txt`.
 
-## Instalação
+## 🛠️ Tecnologias Utilizadas
 
-Siga os passos abaixo para configurar e rodar o ambiente de desenvolvimento localmente.
+- **Python 3**
+- **Tkinter**: Para a interface gráfica.
+- **Matplotlib**: Para a criação dos gráficos (mapa do túnel e imagem das vítimas).
+- **Pillow (PIL)**: Para manipulação de imagens.
 
-**1. Clone o Repositório (Opcional)**
+## 🚀 Como Executar
 
-Se você estiver baixando o código de um repositório Git, use o comando:
-```bash
-git clone <url-do-seu-repositorio>
-cd <nome-da-pasta-do-projeto>
-```
+1.  **Clone o repositório:**
+    ```bash
+    git clone <URL-DO-SEU-REPOSITORIO>
+    cd ProjRoboSoco
+    ```
 
-**2. Crie um Ambiente Virtual**
+2.  **Instale as dependências:**
+    Certifique-se de ter o Python 3 instalado e execute o comando abaixo para instalar as bibliotecas necessárias.
+    ```bash
+    pip install -r requirements.txt
+    ```
 
-É uma boa prática isolar as dependências do projeto em um ambiente virtual.
-
-```bash
-# No Windows
-python -m venv venv
-```
-
-**3. Ative o Ambiente Virtual**
-
-```powershell
-# No Windows (PowerShell)
-.\venv\Scripts\Activate.ps1
-
-# No Windows (Command Prompt)
-.\venv\Scripts\activate.bat
-```
-
-**4. Instale as Dependências**
-
-Instale todas as bibliotecas necessárias de uma vez usando o arquivo `requirements.txt`.
-
-```bash
-pip install -r requirements.txt
-```
-
-## Como Executar
-
-Com o ambiente virtual ativado e as dependências instaladas, execute o seguinte comando no terminal:
-
-```bash
-python robosoco.py
-```
-
-A interface gráfica da Central de Controle será iniciada e a simulação começará automaticamente.
-
-## Arquivos Gerados
-
-Ao final de cada missão, você pode gerar um relatório. Se optar por salvá-lo, um arquivo de texto será criado na pasta raiz do projeto com o seguinte formato:
-
-- `relatorio_missao_AAAA-MM-DD_HH-MM-SS.txt`
+3.  **Execute a aplicação:**
+    O script precisa da pasta `imagens` com os arquivos de cenário no mesmo diretório.
+    ```bash
+    python robosoco.py
+    ```
