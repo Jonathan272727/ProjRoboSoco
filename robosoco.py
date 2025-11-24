@@ -12,7 +12,6 @@ import io
 import os
 
 # --- CONFIGURAÇÕES DE IMAGENS ---
-# A forma mais robusta de definir o caminho para a pasta de imagens.
 # Isso garante que o script encontre a pasta 'imagens' que está no mesmo diretório que ele.
 DIRETORIO_DO_SCRIPT = os.path.dirname(os.path.abspath(__file__))
 PASTA_IMAGENS = os.path.join(DIRETORIO_DO_SCRIPT, "imagens")
@@ -105,15 +104,14 @@ class Vitima:
         
         cores = {"Leve": "#4CAF50", "Moderado": "#FF9800", "Grave": "#F44336", "Crítico": "#8B0000"}
         cor = cores.get(self.gravidade, "white")
-        # Cria um círculo sem preenchimento (fill=False) e com uma borda mais espessa (linewidth)
+
         # Isso servirá como a borda colorida ao redor da imagem.
         circle = plt.Circle((0.5, 0.5), 0.4, color=cor, fill=False, linewidth=4)
-        ax.add_patch(circle) # Adiciona a borda
-
+        ax.add_patch(circle) 
         # --- LÓGICA PARA CARREGAR A IMAGEM DA VÍTIMA ---
         imagem_adicionada = False
         
-        # 1. Encontra o nome do arquivo de imagem correto usando o método centralizado
+        # 1. Encontra o nome do arquivo de imagem correto
         nome_arquivo = self._get_nome_arquivo_imagem()
 
         # 2. Monta o caminho completo para a imagem
@@ -123,17 +121,13 @@ class Vitima:
         if os.path.exists(caminho_imagem):
             try:
                 img = plt.imread(caminho_imagem)
-                im = ax.imshow(img, extent=(0.1, 0.9, 0.1, 0.9)) # Posiciona a imagem para caber no círculo
-                
-                # Cria um segundo círculo (invisível) apenas para usar como máscara de recorte
+                im = ax.imshow(img, extent=(0.1, 0.9, 0.1, 0.9)) 
                 clip_circle = plt.Circle((0.5, 0.5), 0.4, transform=ax.transData)
-                im.set_clip_path(clip_circle) # Recorta a imagem no formato do círculo
+                im.set_clip_path(clip_circle)
                 imagem_adicionada = True
             except Exception as e:
                 print(f"⚠️ Erro ao carregar a imagem '{caminho_imagem}': {e}")
-        # else:
-            # Se o arquivo não for encontrado, o texto padrão será exibido abaixo.
-            # Não é necessário um print aqui, pois a verificação inicial já avisa.
+
 
         # Se não foi possível adicionar a imagem, exibe o texto padrão
         if not imagem_adicionada:
@@ -280,7 +274,7 @@ class CentralDeControle:
 
             for vitima in vitimas_ordenadas:
                 relatorio += f"\n  - Vítima ID: {vitima.id}\n"
-                relatorio += f"    Posição: {vitima.x}m\n"
+                relatorio += f"    Coordenadas (X, Y): ({vitima.x}m, {vitima.y}m)\n"
                 relatorio += f"    Gravidade: {vitima.gravidade}\n"
                 relatorio += f"    Registro de Campo: {'Sim' if vitima.foto_tirada else 'Não'}\n"
                 relatorio += f"    Kit de Socorro Aplicado: {'Sim' if vitima.kit_aplicado else 'Não'}\n"
